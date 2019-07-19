@@ -4,10 +4,10 @@ const Client = require('ftp');
 const program = require('commander');
 
 const client = new Client();
-// Credintials here
+
 client.connect({
-  user: '',
-  password: '',
+  user: "",
+  password: "",
   host: '',
 });
 
@@ -17,13 +17,17 @@ function upload(files, from, to) {
       const splittedName = file.path.split('/');
       splittedName.splice(0, 1);
       const name = splittedName.join('/')
-      client.mkdir(path.join(serverDist, name), () => { });
+      client.mkdir(path.join(serverDist, name), true, () => { });
       upload(file.files, file.path, name)
     } else {
       const fromPath = path.join(from, file);
       const toPath = path.join(serverDist, to, file);
       client.append(fromPath, toPath, function (error) {
         console.log(`Upload FROM:: ${fromPath},`, `\n Upload TO:: ${toPath}`);
+        if (error) {
+          console.warn(error);
+          throw error;
+        }
       });
     }
   });
@@ -52,8 +56,6 @@ class FolderParser {
 }
 
 var serverDist;
-
-// npm i --save-dev commander
 // node ftp --from="localFolder" --to="serverFolder"
 program
   .option('-f, --from <required>', 'The name of folder in local point that contain { this (ftp file) }')
